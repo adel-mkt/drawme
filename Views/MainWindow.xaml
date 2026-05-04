@@ -23,71 +23,49 @@
              BARRE DE PROPRIÉTÉS (haut)
              ══════════════════════════════════════════════════════════════ -->
         <Border Grid.Row="0" Background="#34495E" BorderBrush="#2C3E50" BorderThickness="0,0,0,1">
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0">
+            <DockPanel VerticalAlignment="Center" Margin="8,0">
 
-                <!-- Couleur de remplissage -->
-                <TextBlock Text="Remplissage :" Foreground="#BDC3C7" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="12"/>
-                <Button Name="BtnFillColor" Width="32" Height="28" Margin="0,0,8,0"
-                        ToolTip="Choisir la couleur de remplissage"
-                        Click="BtnFillColor_Click" Cursor="Hand" BorderBrush="#95A5A6" BorderThickness="1">
-                    <Button.Background>
-                        <SolidColorBrush Color="{Binding FillColor}"/>
-                    </Button.Background>
-                </Button>
+                <!-- ── Fichier (gauche) ── -->
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                    <Button Name="BtnNew" Style="{StaticResource PropButtonStyle}" Width="30"
+                            ToolTip="Nouveau dessin (Ctrl+N)" Click="BtnNew_Click" Content="📄"/>
+                    <Button Name="BtnSave" Style="{StaticResource PropButtonStyle}" Width="30"
+                            ToolTip="Sauvegarder (Ctrl+S)" Click="BtnSave_Click" Content="💾"/>
+                    <Button Name="BtnLoad" Style="{StaticResource PropButtonStyle}" Width="30"
+                            ToolTip="Ouvrir (Ctrl+O)" Click="BtnLoad_Click" Content="📂"/>
+                    <Separator Style="{StaticResource ToolSeparatorStyle}" Width="1" Height="28" Margin="8,0"/>
+                </StackPanel>
 
-                <!-- Couleur de contour -->
-                <TextBlock Text="Contour :" Foreground="#BDC3C7" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="12"/>
-                <Button Name="BtnStrokeColor" Width="32" Height="28" Margin="0,0,12,0"
-                        ToolTip="Choisir la couleur de contour"
-                        Click="BtnStrokeColor_Click" Cursor="Hand" BorderBrush="#95A5A6" BorderThickness="1">
-                    <Button.Background>
-                        <SolidColorBrush Color="{Binding StrokeColor}"/>
-                    </Button.Background>
-                </Button>
+                <!-- ── Couleurs + Épaisseur (droite) ── -->
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                    <Separator Style="{StaticResource ToolSeparatorStyle}" Width="1" Height="28" Margin="8,0"/>
+                    <TextBlock Text="Remplissage" Foreground="#BDC3C7" VerticalAlignment="Center" Margin="0,0,5,0" FontSize="12"/>
+                    <Button Name="BtnFillColor" Width="34" Height="26" Cursor="Hand"
+                            ToolTip="Couleur de remplissage" Click="BtnFillColor_Click"
+                            BorderThickness="2" BorderBrush="#546E7A">
+                        <Button.Background><SolidColorBrush Color="{Binding FillColor}"/></Button.Background>
+                    </Button>
+                    <TextBlock Text="Contour" Foreground="#BDC3C7" VerticalAlignment="Center" Margin="10,0,5,0" FontSize="12"/>
+                    <Button Name="BtnStrokeColor" Width="34" Height="26" Cursor="Hand"
+                            ToolTip="Couleur du contour" Click="BtnStrokeColor_Click"
+                            BorderThickness="2" BorderBrush="#546E7A">
+                        <Button.Background><SolidColorBrush Color="{Binding StrokeColor}"/></Button.Background>
+                    </Button>
+                    <Separator Style="{StaticResource ToolSeparatorStyle}" Width="1" Height="28" Margin="10,0"/>
+                    <TextBlock Text="Épaisseur" Foreground="#BDC3C7" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="12"/>
+                    <Slider Name="SliderThickness" Width="90" Minimum="0.5" Maximum="30"
+                            Value="{Binding StrokeThickness, Mode=TwoWay}"
+                            VerticalAlignment="Center" TickFrequency="0.5" IsSnapToTickEnabled="True"/>
+                    <TextBlock Text="{Binding StrokeThickness, StringFormat={}{0:F1}px}"
+                               Foreground="#BDC3C7" VerticalAlignment="Center"
+                               Width="36" FontSize="11" Margin="5,0,0,0"/>
+                </StackPanel>
 
-                <Separator Style="{StaticResource ToolSeparatorStyle}" Width="1" Height="30" Margin="4,0"/>
+                <!-- ── Infos sélection (centre) ── -->
+                <TextBlock Name="TxtSelectionInfo" Foreground="#95A5A6" VerticalAlignment="Center"
+                           HorizontalAlignment="Center" FontSize="11" FontStyle="Italic" Text="Aucune sélection"/>
 
-                <!-- Épaisseur -->
-                <TextBlock Text="Épaisseur :" Foreground="#BDC3C7" VerticalAlignment="Center" Margin="8,0,6,0" FontSize="12"/>
-                <Slider Name="SliderThickness"
-                        Width="90" Minimum="0.5" Maximum="30"
-                        Value="{Binding StrokeThickness, Mode=TwoWay}"
-                        VerticalAlignment="Center" Margin="0,0,4,0"
-                        TickFrequency="0.5" IsSnapToTickEnabled="True"/>
-                <TextBlock Text="{Binding StrokeThickness, StringFormat={}{0:F1}px}"
-                           Foreground="#BDC3C7" VerticalAlignment="Center"
-                           Width="38" FontSize="11" Margin="0,0,12,0"/>
-
-                <Separator Style="{StaticResource ToolSeparatorStyle}" Width="1" Height="30" Margin="4,0"/>
-
-                <!-- Zoom -->
-                <TextBlock Text="Zoom :" Foreground="#BDC3C7" VerticalAlignment="Center" Margin="8,0,6,0" FontSize="12"/>
-                <Button Content="−" Style="{StaticResource PropButtonStyle}" Width="26"
-                        ToolTip="Dézoomer (Ctrl+−)" Click="BtnZoomOut_Click"/>
-                <TextBlock Text="{Binding ZoomPercent}"
-                           Foreground="White" VerticalAlignment="Center"
-                           Width="44" TextAlignment="Center" FontSize="12" Margin="2,0"/>
-                <Button Content="+" Style="{StaticResource PropButtonStyle}" Width="26"
-                        ToolTip="Zoomer (Ctrl++)" Click="BtnZoomIn_Click"/>
-                <Button Content="↺" Style="{StaticResource PropButtonStyle}" Width="26" Margin="4,0,0,0"
-                        ToolTip="Réinitialiser le zoom (Ctrl+0)" Click="BtnZoomReset_Click"/>
-
-                <Separator Style="{StaticResource ToolSeparatorStyle}" Width="1" Height="30" Margin="8,0"/>
-
-                <!-- Appliquer couleur à la forme sélectionnée -->
-                <Button Content="🎨 Appliquer à la sélection"
-                        Style="{StaticResource PropButtonStyle}"
-                        ToolTip="Applique la couleur courante à la forme sélectionnée (A)"
-                        Click="BtnApplyColorToSelection_Click"
-                        IsEnabled="{Binding HasSelection}"
-                        Margin="4,0"/>
-
-                <!-- Infos forme sélectionnée (mis à jour par code-behind) -->
-                <TextBlock Name="TxtSelectionInfo"
-                           Foreground="#95A5A6" VerticalAlignment="Center"
-                           Margin="12,0,0,0" FontSize="11"
-                           FontStyle="Italic" Text="Aucune sélection"/>
-            </StackPanel>
+            </DockPanel>
         </Border>
 
         <!-- ══════════════════════════════════════════════════════════════
@@ -105,128 +83,95 @@
                  BARRE D'OUTILS (gauche)
                  ────────────────────────────────────────────────────────── -->
             <Border Grid.Column="0" Background="#34495E" BorderBrush="#2C3E50" BorderThickness="0,0,1,0">
-                <StackPanel Margin="4,8">
+                <DockPanel>
 
-                    <!-- Outils de dessin -->
-                    <TextBlock Text="Outils" Foreground="#7F8C8D" FontSize="9" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                    <!-- ── Zoom en bas ── -->
+                    <StackPanel DockPanel.Dock="Bottom" Margin="4,0,4,6">
+                        <Separator Style="{StaticResource ToolSeparatorStyle}" Margin="4,6"/>
+                        <Button Content="+" Style="{StaticResource ToolButtonStyle}" Height="32"
+                                ToolTip="Zoomer (Ctrl++)" Click="BtnZoomIn_Click" Margin="2,1"/>
+                        <TextBlock Text="{Binding ZoomPercent}" Foreground="#BDC3C7"
+                                   HorizontalAlignment="Center" FontSize="11" Margin="0,3"/>
+                        <Button Content="−" Style="{StaticResource ToolButtonStyle}" Height="32"
+                                ToolTip="Dézoomer (Ctrl+−)" Click="BtnZoomOut_Click" Margin="2,1"/>
+                        <Button Content="↺" Style="{StaticResource ToolButtonStyle}" Height="28"
+                                ToolTip="Réinitialiser (Ctrl+0)" Click="BtnZoomReset_Click" Margin="2,4,2,0"/>
+                    </StackPanel>
 
-                    <!-- Sélection / Pointeur -->
-                    <Button Name="BtnToolPointer"
-                            Style="{StaticResource ToolButtonStyle}"
-                            ToolTip="Sélectionner / Déplacer (V)"
-                            Click="BtnToolPointer_Click">
-                        <TextBlock Text="↖" FontSize="18" FontWeight="Bold"/>
-                    </Button>
+                    <!-- ── Outils + Édition + Z-Index ── -->
+                    <StackPanel DockPanel.Dock="Top" Margin="4,8,4,0">
 
-                    <!-- Ligne -->
-                    <Button Name="BtnToolLine"
-                            Style="{StaticResource ToolButtonStyle}"
-                            ToolTip="Tracer une ligne (L)"
-                            Click="BtnToolLine_Click">
-                        <Canvas Width="24" Height="24">
-                            <Line X1="4" Y1="20" X2="20" Y2="4"
-                                  Stroke="White" StrokeThickness="2.5"
-                                  StrokeLineCap="Round"/>
-                        </Canvas>
-                    </Button>
+                        <Button Name="BtnToolPointer" Style="{StaticResource ToolButtonStyle}"
+                                ToolTip="Sélectionner / Déplacer (V)" Click="BtnToolPointer_Click">
+                            <TextBlock Text="↖" FontSize="18" FontWeight="Bold"/>
+                        </Button>
 
-                    <!-- Rectangle -->
-                    <Button Name="BtnToolRect"
-                            Style="{StaticResource ToolButtonStyle}"
-                            ToolTip="Tracer un rectangle (R)"
-                            Click="BtnToolRect_Click">
-                        <Border BorderBrush="White" BorderThickness="2"
-                                Width="18" Height="13" CornerRadius="1"/>
-                    </Button>
+                        <Button Name="BtnToolLine" Style="{StaticResource ToolButtonStyle}"
+                                ToolTip="Tracer une ligne (L)" Click="BtnToolLine_Click">
+                            <Canvas Width="24" Height="24">
+                                <Line X1="4" Y1="20" X2="20" Y2="4" Stroke="White" StrokeThickness="2.5"
+                                      StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                            </Canvas>
+                        </Button>
 
-                    <!-- Ellipse -->
-                    <Button Name="BtnToolEllipse"
-                            Style="{StaticResource ToolButtonStyle}"
-                            ToolTip="Tracer une ellipse (E)"
-                            Click="BtnToolEllipse_Click">
-                        <Ellipse Stroke="White" StrokeThickness="2"
-                                 Width="18" Height="14"/>
-                    </Button>
+                        <Button Name="BtnToolRect" Style="{StaticResource ToolButtonStyle}"
+                                ToolTip="Tracer un rectangle (R)" Click="BtnToolRect_Click">
+                            <Border BorderBrush="White" BorderThickness="2" Width="18" Height="13" CornerRadius="1"/>
+                        </Button>
 
-                    <Separator Style="{StaticResource ToolSeparatorStyle}"/>
-                    <TextBlock Text="Édition" Foreground="#7F8C8D" FontSize="9" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <Button Name="BtnToolEllipse" Style="{StaticResource ToolButtonStyle}"
+                                ToolTip="Tracer une ellipse (E)" Click="BtnToolEllipse_Click">
+                            <Ellipse Stroke="White" StrokeThickness="2" Width="18" Height="14"/>
+                        </Button>
 
-                    <!-- Undo -->
-                    <Button Name="BtnUndo"
-                            Style="{StaticResource ToolButtonStyle}"
-                            ToolTip="Annuler (Ctrl+Z)"
-                            Click="BtnUndo_Click"
-                            IsEnabled="{Binding CanUndo}">
-                        <TextBlock Text="↩" FontSize="17"/>
-                    </Button>
+                        <Button Name="BtnToolTriangle" Style="{StaticResource ToolButtonStyle}"
+                                ToolTip="Tracer un triangle (T)" Click="BtnToolTriangle_Click">
+                            <Canvas Width="24" Height="24">
+                                <Polygon Points="12,3 22,21 2,21" Stroke="White" StrokeThickness="2"
+                                         StrokeLineJoin="Round" Fill="Transparent"/>
+                            </Canvas>
+                        </Button>
 
-                    <!-- Redo -->
-                    <Button Name="BtnRedo"
-                            Style="{StaticResource ToolButtonStyle}"
-                            ToolTip="Rétablir (Ctrl+Y)"
-                            Click="BtnRedo_Click"
-                            IsEnabled="{Binding CanRedo}">
-                        <TextBlock Text="↪" FontSize="17"/>
-                    </Button>
+                        <Separator Style="{StaticResource ToolSeparatorStyle}"/>
 
-                    <!-- Supprimer -->
-                    <Button Name="BtnDelete"
-                            Style="{StaticResource ToolButtonStyle}"
-                            ToolTip="Supprimer la sélection (Suppr)"
-                            Click="BtnDelete_Click"
-                            IsEnabled="{Binding HasSelection}">
-                        <TextBlock Text="🗑" FontSize="16"/>
-                    </Button>
+                        <Button Name="BtnUndo" Style="{StaticResource ToolButtonStyle}"
+                                ToolTip="Annuler (Ctrl+Z)" Click="BtnUndo_Click" IsEnabled="{Binding CanUndo}">
+                            <TextBlock Text="↩" FontSize="17"/>
+                        </Button>
 
-                    <Separator Style="{StaticResource ToolSeparatorStyle}"/>
-                    <TextBlock Text="Z-Index" Foreground="#7F8C8D" FontSize="9" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <Button Name="BtnRedo" Style="{StaticResource ToolButtonStyle}"
+                                ToolTip="Rétablir (Ctrl+Y)" Click="BtnRedo_Click" IsEnabled="{Binding CanRedo}">
+                            <TextBlock Text="↪" FontSize="17"/>
+                        </Button>
 
-                    <!-- Bring to Front -->
-                    <Button Name="BtnBringFront"
-                            Style="{StaticResource ToolButtonStyle}"
-                            ToolTip="Mettre au premier plan (Ctrl+])"
-                            Click="BtnBringFront_Click"
-                            IsEnabled="{Binding HasSelection}">
-                        <TextBlock Text="⬆" FontSize="16"/>
-                    </Button>
+                        <Button Name="BtnDelete" Style="{StaticResource ToolButtonStyle}"
+                                ToolTip="Supprimer la sélection (Suppr)" Click="BtnDelete_Click"
+                                IsEnabled="{Binding HasSelection}">
+                            <TextBlock Text="🗑" FontSize="16"/>
+                        </Button>
 
-                    <!-- Send to Back -->
-                    <Button Name="BtnSendBack"
-                            Style="{StaticResource ToolButtonStyle}"
-                            ToolTip="Mettre à l'arrière-plan (Ctrl+[)"
-                            Click="BtnSendBack_Click"
-                            IsEnabled="{Binding HasSelection}">
-                        <TextBlock Text="⬇" FontSize="16"/>
-                    </Button>
+                        <Separator Style="{StaticResource ToolSeparatorStyle}"/>
 
-                    <Separator Style="{StaticResource ToolSeparatorStyle}"/>
-                    <TextBlock Text="Fichier" Foreground="#7F8C8D" FontSize="9" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <Button Name="BtnBringFront" Style="{StaticResource ToolButtonStyle}"
+                                ToolTip="Premier plan (Ctrl+])" Click="BtnBringFront_Click"
+                                IsEnabled="{Binding HasSelection}">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="▲" FontSize="11" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Avant" FontSize="8" HorizontalAlignment="Center" Foreground="#BDC3C7"/>
+                            </StackPanel>
+                        </Button>
 
-                    <!-- Nouveau -->
-                    <Button Name="BtnNew"
-                            Style="{StaticResource ToolButtonStyle}"
-                            ToolTip="Nouveau dessin (Ctrl+N)"
-                            Click="BtnNew_Click">
-                        <TextBlock Text="📄" FontSize="16"/>
-                    </Button>
+                        <Button Name="BtnSendBack" Style="{StaticResource ToolButtonStyle}"
+                                ToolTip="Arrière-plan (Ctrl+[)" Click="BtnSendBack_Click"
+                                IsEnabled="{Binding HasSelection}">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="▼" FontSize="11" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Arrière" FontSize="8" HorizontalAlignment="Center" Foreground="#BDC3C7"/>
+                            </StackPanel>
+                        </Button>
 
-                    <!-- Sauvegarder -->
-                    <Button Name="BtnSave"
-                            Style="{StaticResource ToolButtonStyle}"
-                            ToolTip="Sauvegarder (Ctrl+S)"
-                            Click="BtnSave_Click">
-                        <TextBlock Text="💾" FontSize="16"/>
-                    </Button>
-
-                    <!-- Charger -->
-                    <Button Name="BtnLoad"
-                            Style="{StaticResource ToolButtonStyle}"
-                            ToolTip="Ouvrir (Ctrl+O)"
-                            Click="BtnLoad_Click">
-                        <TextBlock Text="📂" FontSize="16"/>
-                    </Button>
-
-                </StackPanel>
+                    </StackPanel>
+                </DockPanel>
             </Border>
 
             <!-- ──────────────────────────────────────────────────────────
@@ -240,14 +185,13 @@
                           Padding="20">
                 <!-- Ombre / cadre du canvas -->
                 <Border BorderBrush="#95A5A6" BorderThickness="1"
-                        Effect="{x:Null}"
                         HorizontalAlignment="Left" VerticalAlignment="Top">
                     <Border.Effect>
                         <DropShadowEffect Color="#888" BlurRadius="12" ShadowDepth="4" Opacity="0.4"/>
                     </Border.Effect>
 
                     <!-- DrawingCanvas instancié directement en XAML -->
-                    <views:DrawingCanvas Name="MainDrawingCanvas"
+                    <views:DrawingCanvas x:Name="MainDrawingCanvas"
                                          Width="1200" Height="900"
                                          Background="White"
                                          Focusable="True"/>

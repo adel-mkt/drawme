@@ -24,6 +24,7 @@ namespace DrawMe.Models
     [JsonDerivedType(typeof(DrawingLine),      typeDiscriminator: "line")]
     [JsonDerivedType(typeof(DrawingRectangle), typeDiscriminator: "rectangle")]
     [JsonDerivedType(typeof(DrawingEllipse),   typeDiscriminator: "ellipse")]
+    [JsonDerivedType(typeof(DrawingTriangle),  typeDiscriminator: "triangle")]
     public abstract class DrawingShapeBase
     {
         // ───────────────────────────────────────────────

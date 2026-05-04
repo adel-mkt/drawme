@@ -23,16 +23,35 @@ namespace DrawMe.ViewModels
 
         // ─── Forme sélectionnée ────────────────────────────────────────────
         private DrawingShapeBase? _selectedShape;
+        private bool _updatingFromShape = false;
+        public bool IsUpdatingFromShape => _updatingFromShape;
+
         public DrawingShapeBase? SelectedShape
         {
             get => _selectedShape;
-            set { _selectedShape = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasSelection)); }
+            set
+            {
+                _selectedShape = value;
+                if (value != null)
+                {
+                    _updatingFromShape = true;
+                    _fillColor        = value.FillColor;
+                    _strokeColor      = value.StrokeColor;
+                    _strokeThickness  = value.StrokeThickness;
+                    OnPropertyChanged(nameof(FillColor));
+                    OnPropertyChanged(nameof(StrokeColor));
+                    OnPropertyChanged(nameof(StrokeThickness));
+                    _updatingFromShape = false;
+                }
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(HasSelection));
+            }
         }
 
         public bool HasSelection => _selectedShape != null;
 
         // ─── Outil actif ───────────────────────────────────────────────────
-        public enum Tool { Pointer, Line, Rectangle, Ellipse }
+        public enum Tool { Pointer, Line, Rectangle, Ellipse, Triangle }
 
         private Tool _currentTool = Tool.Pointer;
         public Tool CurrentTool

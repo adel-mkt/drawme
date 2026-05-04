@@ -1,6 +1,5 @@
 using DrawMe.Commands;
 using DrawMe.ViewModels;
-using Microsoft.Win32;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -46,6 +45,17 @@ namespace DrawMe.Views
                 if (e.PropertyName == nameof(MainViewModel.FillColor) ||
                     e.PropertyName == nameof(MainViewModel.StrokeColor))
                     UpdateColorButtons();
+
+                if (!_vm.IsUpdatingFromShape && _vm.SelectedShape != null &&
+                    (e.PropertyName == nameof(MainViewModel.FillColor) ||
+                     e.PropertyName == nameof(MainViewModel.StrokeColor) ||
+                     e.PropertyName == nameof(MainViewModel.StrokeThickness)))
+                {
+                    _vm.SelectedShape.FillColorHex    = _vm.FillColor.ToString();
+                    _vm.SelectedShape.StrokeColorHex  = _vm.StrokeColor.ToString();
+                    _vm.SelectedShape.StrokeThickness = _vm.StrokeThickness;
+                    MainDrawingCanvas.RefreshShape(_vm.SelectedShape);
+                }
             };
         }
 
@@ -58,19 +68,16 @@ namespace DrawMe.Views
             var active   = Application.Current.Resources["ActiveToolButtonStyle"]   as System.Windows.Style;
             var normal   = Application.Current.Resources["ToolButtonStyle"]         as System.Windows.Style;
 
-            BtnToolPointer.Style = _vm.CurrentTool == MainViewModel.Tool.Pointer   ? active : normal;
-            BtnToolLine.Style    = _vm.CurrentTool == MainViewModel.Tool.Line      ? active : normal;
-            BtnToolRect.Style    = _vm.CurrentTool == MainViewModel.Tool.Rectangle ? active : normal;
-            BtnToolEllipse.Style = _vm.CurrentTool == MainViewModel.Tool.Ellipse   ? active : normal;
+            BtnToolPointer.Style  = _vm.CurrentTool == MainViewModel.Tool.Pointer   ? active : normal;
+            BtnToolLine.Style     = _vm.CurrentTool == MainViewModel.Tool.Line      ? active : normal;
+            BtnToolRect.Style     = _vm.CurrentTool == MainViewModel.Tool.Rectangle ? active : normal;
+            BtnToolEllipse.Style  = _vm.CurrentTool == MainViewModel.Tool.Ellipse   ? active : normal;
+            BtnToolTriangle.Style = _vm.CurrentTool == MainViewModel.Tool.Triangle  ? active : normal;
 
-            // Curseur adapté au canvas
             MainDrawingCanvas.Cursor = _vm.CurrentTool switch
             {
-                MainViewModel.Tool.Pointer   => Cursors.Arrow,
-                MainViewModel.Tool.Line      => Cursors.Cross,
-                MainViewModel.Tool.Rectangle => Cursors.Cross,
-                MainViewModel.Tool.Ellipse   => Cursors.Cross,
-                _                            => Cursors.Arrow
+                MainViewModel.Tool.Pointer  => Cursors.Arrow,
+                _                           => Cursors.Cross
             };
         }
 
@@ -84,13 +91,18 @@ namespace DrawMe.Views
         {
             if (_vm.SelectedShape == null)
             {
-                TxtSelectionInfo.Text = "Aucune sélection";
+                TxtSelectionInfo.Text       = "Aucune sélection";
+                TxtSelectionInfo.Foreground = new SolidColorBrush(Color.FromRgb(0x95, 0xA5, 0xA6));
+                TxtSelectionInfo.FontStyle  = System.Windows.FontStyles.Italic;
                 return;
             }
             var s = _vm.SelectedShape;
             var r = s.BoundingRect;
-            TxtSelectionInfo.Text = $"{s.GetType().Name.Replace("Drawing", "")} — " +
-                                    $"Pos: ({r.X:F0}, {r.Y:F0}) | Taille: {r.Width:F0}×{r.Height:F0}";
+            TxtSelectionInfo.Text       = $"{s.GetType().Name.Replace("Drawing", "")}  •  " +
+                                          $"{r.Width:F0} × {r.Height:F0} px  •  " +
+                                          $"({r.X:F0}, {r.Y:F0})";
+            TxtSelectionInfo.Foreground = System.Windows.Media.Brushes.White;
+            TxtSelectionInfo.FontStyle  = System.Windows.FontStyles.Normal;
         }
 
         // ───────────────────────────────────────────────────────────────────
@@ -108,6 +120,9 @@ namespace DrawMe.Views
 
         private void BtnToolEllipse_Click(object sender, RoutedEventArgs e) =>
             _vm.CurrentTool = MainViewModel.Tool.Ellipse;
+
+        private void BtnToolTriangle_Click(object sender, RoutedEventArgs e) =>
+            _vm.CurrentTool = MainViewModel.Tool.Triangle;
 
         // ───────────────────────────────────────────────────────────────────
         // Couleurs
@@ -144,20 +159,20 @@ namespace DrawMe.Views
         /// En WPF pur, on doit référencer WinForms pour le sélecteur de couleur natif Windows.
         /// Alternative : implémenter un ColorPicker XAML custom.
         /// </summary>
-        private Color? ShowColorDialog(Color current)
-        {
+        private System.Windows.Media.Color? ShowColorDialog(System.Windows.Media.Color current)
+{
             var dlg = new System.Windows.Forms.ColorDialog
             {
-                Color            = System.Drawing.Color.FromArgb(current.A, current.R, current.G, current.B),
-                FullOpen         = true,
-                AllowFullOpen    = true,
-                AnyColor         = true
+                // Ici on transforme la couleur WPF en couleur System.Drawing pour le dialogue
+                Color = System.Drawing.Color.FromArgb(current.A, current.R, current.G, current.B),
+                FullOpen = true
             };
 
             if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 var c = dlg.Color;
-                return Color.FromArgb(c.A, c.R, c.G, c.B);
+                // Ici on transforme la couleur System.Drawing en couleur WPF pour le retour
+                return System.Windows.Media.Color.FromArgb(c.A, c.R, c.G, c.B);
             }
             return null;
         }
@@ -350,6 +365,7 @@ namespace DrawMe.Views
                     case Key.L: _vm.CurrentTool = MainViewModel.Tool.Line;      e.Handled = true; break;
                     case Key.R: _vm.CurrentTool = MainViewModel.Tool.Rectangle; e.Handled = true; break;
                     case Key.E: _vm.CurrentTool = MainViewModel.Tool.Ellipse;   e.Handled = true; break;
+                    case Key.T: _vm.CurrentTool = MainViewModel.Tool.Triangle;  e.Handled = true; break;
                     case Key.Delete:
                         BtnDelete_Click(sender, new RoutedEventArgs());
                         e.Handled = true;

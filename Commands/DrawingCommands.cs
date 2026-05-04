@@ -217,6 +217,10 @@ namespace DrawMe.Commands
                     s.X = ell.X; s.Y = ell.Y;
                     s.Width = ell.Width; s.Height = ell.Height;
                     break;
+                case Models.DrawingTriangle tri:
+                    s.X = tri.X; s.Y = tri.Y;
+                    s.Width = tri.Width; s.Height = tri.Height;
+                    break;
             }
             return s;
         }
@@ -236,6 +240,10 @@ namespace DrawMe.Commands
                 case Models.DrawingEllipse ell:
                     ell.X = X; ell.Y = Y;
                     ell.Width = Width; ell.Height = Height;
+                    break;
+                case Models.DrawingTriangle tri:
+                    tri.X = X; tri.Y = Y;
+                    tri.Width = Width; tri.Height = Height;
                     break;
             }
         }
