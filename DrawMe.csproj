@@ -8,11 +8,14 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>DrawMe</AssemblyName>
     <RootNamespace>DrawMe</RootNamespace>
-    <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Text.Json" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\logo.png" />
   </ItemGroup>
 
 </Project>
