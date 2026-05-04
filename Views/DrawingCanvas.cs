@@ -10,20 +10,15 @@ using System.Windows.Shapes;
 
 namespace DrawMe.Views
 {
-    /// <summary>
-    /// Canvas de dessin principal.
-    /// Hérite de Canvas (WPF).
-    /// Gère : dessin, sélection, déplacement, redimensionnement, zoom.
-    /// Architecture : la logique est ici car elle est fortement couplée aux événements souris WPF.
-    /// </summary>
+    
     public class DrawingCanvas : Canvas
     {
-        // ───────────────────────────────────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────────
         // Constantes UI
         // ───────────────────────────────────────────────────────────────────
-        private const double HandleSize    = 10.0;  // Taille des poignées (pixels)
+        private const double HandleSize    = 10.0;
         private const double HandleHalf    = HandleSize / 2.0;
-        private const double MinShapeSize  = 4.0;   // Taille minimale d'une forme
+        private const double MinShapeSize  = 4.0;
 
         // ───────────────────────────────────────────────────────────────────
         // Référence au ViewModel
@@ -41,24 +36,24 @@ namespace DrawMe.Views
         private enum MouseMode { None, Drawing, Moving, Resizing }
         private MouseMode _mouseMode = MouseMode.None;
 
-        private Point _mouseDownPoint;      // Point de départ du drag
-        private Point _lastMousePoint;      // Point souris précédent (pour delta)
+        private Point _mouseDownPoint;      
+        private Point _lastMousePoint;     
 
         // ─── Dessin en cours ───────────────────────────────────────────────
-        private UIElement? _previewElement; // Forme en cours de tracé (feedback visuel)
+        private UIElement? _previewElement; 
 
         // ─── Déplacement ───────────────────────────────────────────────────
         private DrawingShapeBase? _movingShape;
-        private Point _moveStartPosition;   // Position de la forme au début du drag
+        private Point _moveStartPosition;  
 
         // ─── Redimensionnement ─────────────────────────────────────────────
         private DrawingShapeBase? _resizingShape;
-        private int _resizeHandleIndex;     // Quel handle (0-7)
-        private ShapeSnapshot? _resizeSnapshot; // État avant resize
+        private int _resizeHandleIndex;    
+        private ShapeSnapshot? _resizeSnapshot;
 
         // ─── Sélection ─────────────────────────────────────────────────────
-        private System.Windows.Shapes.Rectangle? _selectionRect; // Bordure de sélection
-        private readonly List<Thumb> _handles = new();            // 8 poignées
+        private System.Windows.Shapes.Rectangle? _selectionRect; 
+        private readonly List<Thumb> _handles = new();     
 
         // ─── Zoom ──────────────────────────────────────────────────────────
         private ScaleTransform _scaleTransform = new(1, 1);
@@ -104,7 +99,7 @@ namespace DrawMe.Views
             MouseWheel          += OnMouseWheel;
         }
 
-        /// <summary>Injecte le ViewModel après construction.</summary>
+        
         public void SetViewModel(MainViewModel vm)
         {
             _vm = vm;
@@ -120,15 +115,8 @@ namespace DrawMe.Views
                     UpdateSelectionOverlay();
             };
         }
-
-        // ───────────────────────────────────────────────────────────────────
-        // Rendu complet du canvas (depuis la collection du ViewModel)
-        // ───────────────────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Reconstruit tous les éléments WPF à partir de la collection Shapes.
-        /// Appelé après chaque changement de collection (add, remove, undo, load...).
-        /// </summary>
+        
+        
         public void RefreshCanvas()
         {
             // Supprimer les anciens éléments de forme (garder les overlays)
@@ -151,10 +139,10 @@ namespace DrawMe.Views
             UpdateSelectionOverlay();
         }
 
-        /// <summary>
-        /// Met à jour uniquement un élément WPF existant selon son modèle.
-        /// Plus efficace que RefreshCanvas() pour une mise à jour partielle.
-        /// </summary>
+        
+        
+        
+        
         public void RefreshShape(DrawingShapeBase shape)
         {
             if (!_shapeElements.TryGetValue(shape, out var el)) return;
@@ -226,13 +214,13 @@ namespace DrawMe.Views
         // Poignées de redimensionnement
         // ───────────────────────────────────────────────────────────────────
 
-        /// <summary>
-        /// Crée un Thumb (poignée de redim) pour l'index donné.
-        /// Ordre des indices :
-        ///   0=TopLeft, 1=TopCenter, 2=TopRight,
-        ///   3=MiddleLeft,            4=MiddleRight,
-        ///   5=BottomLeft, 6=BottomCenter, 7=BottomRight
-        /// </summary>
+        
+        
+        
+        
+        
+        
+        
         private Thumb CreateResizeHandle(int index)
         {
             var cursor = index switch
@@ -459,7 +447,7 @@ namespace DrawMe.Views
         // Dessin des formes
         // ───────────────────────────────────────────────────────────────────
 
-        /// <summary>Crée l'élément de prévisualisation (pendant le tracé).</summary>
+        
         private UIElement? CreatePreviewElement()
         {
             if (_vm == null) return null;
@@ -538,7 +526,7 @@ namespace DrawMe.Views
             }
         }
 
-        /// <summary>Valide le dessin et crée la forme dans le ViewModel.</summary>
+        
         private void CommitDrawing(Point p1, Point p2)
         {
             if (_vm == null) return;
@@ -632,10 +620,10 @@ namespace DrawMe.Views
             _vm!.StatusMessage = "Redimensionné";
         }
 
-        /// <summary>
-        /// Applique un delta de redimensionnement selon l'index de la poignée.
-        /// Garantit une taille minimale et adapte la logique selon le type de forme.
-        /// </summary>
+        
+        
+        
+        
         private void ApplyResizeDelta(DrawingShapeBase shape, int handleIndex, double dx, double dy)
         {
             switch (shape)
@@ -725,9 +713,9 @@ namespace DrawMe.Views
         // Hit-test : trouver la forme sous le curseur
         // ───────────────────────────────────────────────────────────────────
 
-        /// <summary>
-        /// Retourne la forme visible (Z-index le plus haut) sous le point donné.
-        /// </summary>
+        
+        -index le plus haut) sous le point donné.
+        
         private DrawingShapeBase? HitTestShape(Point p)
         {
             if (_vm == null) return null;
