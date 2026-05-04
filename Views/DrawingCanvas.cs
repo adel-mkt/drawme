@@ -711,11 +711,7 @@ namespace DrawMe.Views
 
         // ───────────────────────────────────────────────────────────────────
         // Hit-test : trouver la forme sous le curseur
-        // ───────────────────────────────────────────────────────────────────
-
-        
-        -index le plus haut) sous le point donné.
-        
+        // ───────────────────────────────────────────────────────────────────        
         private DrawingShapeBase? HitTestShape(Point p)
         {
             if (_vm == null) return null;
