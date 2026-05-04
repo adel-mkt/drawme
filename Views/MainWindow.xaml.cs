@@ -16,6 +16,8 @@ namespace DrawMe.Views
     {
         private readonly MainViewModel _vm;
 
+        private Action<Color>? _colorPickerCallback;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -26,6 +28,10 @@ namespace DrawMe.Views
 
             // Connecter le canvas au ViewModel
             MainDrawingCanvas.SetViewModel(_vm);
+
+            // Color picker : live update + recalcul des thumbs à l'ouverture
+            ColorPicker.ColorChanged += color => _colorPickerCallback?.Invoke(color);
+            ColorPickerPopupCtrl.Opened += (_, _) => ColorPicker.Refresh();
 
             // Initialiser le refresh côté canvas après chargement
             Loaded += (_, _) =>
@@ -89,20 +95,11 @@ namespace DrawMe.Views
 
         private void UpdateSelectionInfoLabel()
         {
-            if (_vm.SelectedShape == null)
-            {
-                TxtSelectionInfo.Text       = "Aucune sélection";
-                TxtSelectionInfo.Foreground = new SolidColorBrush(Color.FromRgb(0x95, 0xA5, 0xA6));
-                TxtSelectionInfo.FontStyle  = System.Windows.FontStyles.Italic;
-                return;
-            }
+            if (_vm.SelectedShape == null) return;
             var s = _vm.SelectedShape;
             var r = s.BoundingRect;
-            TxtSelectionInfo.Text       = $"{s.GetType().Name.Replace("Drawing", "")}  •  " +
-                                          $"{r.Width:F0} × {r.Height:F0} px  •  " +
-                                          $"({r.X:F0}, {r.Y:F0})";
-            TxtSelectionInfo.Foreground = System.Windows.Media.Brushes.White;
-            TxtSelectionInfo.FontStyle  = System.Windows.FontStyles.Normal;
+            _vm.StatusMessage = $"{s.GetType().Name.Replace("Drawing", "")}  •  " +
+                                $"{r.Width:F0} × {r.Height:F0} px  •  ({r.X:F0}, {r.Y:F0})";
         }
 
         // ───────────────────────────────────────────────────────────────────
@@ -128,16 +125,26 @@ namespace DrawMe.Views
         // Couleurs
         // ───────────────────────────────────────────────────────────────────
 
-        private void BtnFillColor_Click(object sender, RoutedEventArgs e)
-        {
-            var color = ShowColorDialog(_vm.FillColor);
-            if (color.HasValue) _vm.FillColor = color.Value;
-        }
+        private void BtnFillColor_Click(object sender, RoutedEventArgs e) =>
+            OpenColorPicker(BtnFillColor, _vm.FillColor, c => _vm.FillColor = c);
 
-        private void BtnStrokeColor_Click(object sender, RoutedEventArgs e)
+        private void BtnStrokeColor_Click(object sender, RoutedEventArgs e) =>
+            OpenColorPicker(BtnStrokeColor, _vm.StrokeColor, c => _vm.StrokeColor = c);
+
+        private void OpenColorPicker(FrameworkElement target, Color current, Action<Color> callback)
         {
-            var color = ShowColorDialog(_vm.StrokeColor);
-            if (color.HasValue) _vm.StrokeColor = color.Value;
+            ColorPicker.SelectedColor = current;
+            ColorPickerPopupCtrl.PlacementTarget = target;
+            _colorPickerCallback = callback;
+
+            // Placer au-dessus si pas assez de place en dessous
+            var pt      = target.PointToScreen(new Point(0, target.ActualHeight));
+            var workH   = SystemParameters.WorkArea.Bottom;
+            ColorPickerPopupCtrl.Placement      = pt.Y + 340 > workH
+                ? System.Windows.Controls.Primitives.PlacementMode.Top
+                : System.Windows.Controls.Primitives.PlacementMode.Bottom;
+            ColorPickerPopupCtrl.VerticalOffset = 4;
+            ColorPickerPopupCtrl.IsOpen = true;
         }
 
         private void BtnApplyColorToSelection_Click(object sender, RoutedEventArgs e)
@@ -154,28 +161,6 @@ namespace DrawMe.Views
             _vm.StatusMessage = "Couleur appliquée à la sélection";
         }
 
-        /// <summary>
-        /// Ouvre un ColorDialog WPF natif (via System.Windows.Forms.ColorDialog).
-        /// En WPF pur, on doit référencer WinForms pour le sélecteur de couleur natif Windows.
-        /// Alternative : implémenter un ColorPicker XAML custom.
-        /// </summary>
-        private System.Windows.Media.Color? ShowColorDialog(System.Windows.Media.Color current)
-{
-            var dlg = new System.Windows.Forms.ColorDialog
-            {
-                // Ici on transforme la couleur WPF en couleur System.Drawing pour le dialogue
-                Color = System.Drawing.Color.FromArgb(current.A, current.R, current.G, current.B),
-                FullOpen = true
-            };
-
-            if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            {
-                var c = dlg.Color;
-                // Ici on transforme la couleur System.Drawing en couleur WPF pour le retour
-                return System.Windows.Media.Color.FromArgb(c.A, c.R, c.G, c.B);
-            }
-            return null;
-        }
 
         // ───────────────────────────────────────────────────────────────────
         // Édition
@@ -184,6 +169,7 @@ namespace DrawMe.Views
         private void BtnUndo_Click(object sender, RoutedEventArgs e)
         {
             _vm.CommandManager.Undo();
+            RecomputeZIndices();
             MainDrawingCanvas.RefreshCanvas();
             _vm.StatusMessage = "Annulation";
         }
@@ -191,6 +177,7 @@ namespace DrawMe.Views
         private void BtnRedo_Click(object sender, RoutedEventArgs e)
         {
             _vm.CommandManager.Redo();
+            RecomputeZIndices();
             MainDrawingCanvas.RefreshCanvas();
             _vm.StatusMessage = "Rétablissement";
         }

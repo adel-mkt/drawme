@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:DrawMe.Views"
         Title="{Binding WindowTitle}"
+        Icon="/Assets/logo.png"
         Height="750" Width="1100"
         MinHeight="500" MinWidth="700"
         Background="#2C3E50"
@@ -27,12 +28,27 @@
 
                 <!-- ── Fichier (gauche) ── -->
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                    <Button Name="BtnNew" Style="{StaticResource PropButtonStyle}" Width="30"
-                            ToolTip="Nouveau dessin (Ctrl+N)" Click="BtnNew_Click" Content="📄"/>
-                    <Button Name="BtnSave" Style="{StaticResource PropButtonStyle}" Width="30"
-                            ToolTip="Sauvegarder (Ctrl+S)" Click="BtnSave_Click" Content="💾"/>
-                    <Button Name="BtnLoad" Style="{StaticResource PropButtonStyle}" Width="30"
-                            ToolTip="Ouvrir (Ctrl+O)" Click="BtnLoad_Click" Content="📂"/>
+                    <Button Name="BtnNew" Style="{StaticResource PropButtonStyle}"
+                            ToolTip="Nouveau dessin (Ctrl+N)" Click="BtnNew_Click">
+                        <Viewbox Width="15" Height="15">
+                            <Path Data="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+                                  Fill="White" Stretch="Uniform"/>
+                        </Viewbox>
+                    </Button>
+                    <Button Name="BtnSave" Style="{StaticResource PropButtonStyle}"
+                            ToolTip="Sauvegarder (Ctrl+S)" Click="BtnSave_Click">
+                        <Viewbox Width="15" Height="15">
+                            <Path Data="M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3M19,19H5V5H16.17L19,7.83V19M12,12C10.34,12 9,13.34 9,15C9,16.66 10.34,18 12,18C13.66,18 15,16.66 15,15C15,13.34 13.66,12 12,12M6,6H15V10H6V6Z"
+                                  Fill="White" Stretch="Uniform"/>
+                        </Viewbox>
+                    </Button>
+                    <Button Name="BtnLoad" Style="{StaticResource PropButtonStyle}"
+                            ToolTip="Ouvrir (Ctrl+O)" Click="BtnLoad_Click">
+                        <Viewbox Width="15" Height="15">
+                            <Path Data="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z"
+                                  Fill="White" Stretch="Uniform"/>
+                        </Viewbox>
+                    </Button>
                     <Separator Style="{StaticResource ToolSeparatorStyle}" Width="1" Height="28" Margin="8,0"/>
                 </StackPanel>
 
@@ -59,11 +75,18 @@
                     <TextBlock Text="{Binding StrokeThickness, StringFormat={}{0:F1}px}"
                                Foreground="#BDC3C7" VerticalAlignment="Center"
                                Width="36" FontSize="11" Margin="5,0,0,0"/>
+                    <Separator Style="{StaticResource ToolSeparatorStyle}" Width="1" Height="28" Margin="10,0"/>
+                    <Button Content="−" Style="{StaticResource PropButtonStyle}" Width="26"
+                            ToolTip="Dézoomer (Ctrl+−)" Click="BtnZoomOut_Click"/>
+                    <TextBlock Text="{Binding ZoomPercent}" Foreground="#BDC3C7"
+                               VerticalAlignment="Center" FontSize="11" Margin="6,0" MinWidth="38" TextAlignment="Center"/>
+                    <Button Content="+" Style="{StaticResource PropButtonStyle}" Width="26"
+                            ToolTip="Zoomer (Ctrl++)" Click="BtnZoomIn_Click"/>
                 </StackPanel>
 
-                <!-- ── Infos sélection (centre) ── -->
-                <TextBlock Name="TxtSelectionInfo" Foreground="#95A5A6" VerticalAlignment="Center"
-                           HorizontalAlignment="Center" FontSize="11" FontStyle="Italic" Text="Aucune sélection"/>
+                <!-- ── Message de statut (centre) ── -->
+                <TextBlock Text="{Binding StatusMessage}" Foreground="#BDC3C7" VerticalAlignment="Center"
+                           HorizontalAlignment="Center" FontSize="11" FontStyle="Italic"/>
 
             </DockPanel>
         </Border>
@@ -85,25 +108,18 @@
             <Border Grid.Column="0" Background="#34495E" BorderBrush="#2C3E50" BorderThickness="0,0,1,0">
                 <DockPanel>
 
-                    <!-- ── Zoom en bas ── -->
-                    <StackPanel DockPanel.Dock="Bottom" Margin="4,0,4,6">
-                        <Separator Style="{StaticResource ToolSeparatorStyle}" Margin="4,6"/>
-                        <Button Content="+" Style="{StaticResource ToolButtonStyle}" Height="32"
-                                ToolTip="Zoomer (Ctrl++)" Click="BtnZoomIn_Click" Margin="2,1"/>
-                        <TextBlock Text="{Binding ZoomPercent}" Foreground="#BDC3C7"
-                                   HorizontalAlignment="Center" FontSize="11" Margin="0,3"/>
-                        <Button Content="−" Style="{StaticResource ToolButtonStyle}" Height="32"
-                                ToolTip="Dézoomer (Ctrl+−)" Click="BtnZoomOut_Click" Margin="2,1"/>
-                        <Button Content="↺" Style="{StaticResource ToolButtonStyle}" Height="28"
-                                ToolTip="Réinitialiser (Ctrl+0)" Click="BtnZoomReset_Click" Margin="2,4,2,0"/>
-                    </StackPanel>
-
-                    <!-- ── Outils + Édition + Z-Index ── -->
+                    <!-- ── Outils + Édition + Z-Index + Zoom ── -->
                     <StackPanel DockPanel.Dock="Top" Margin="4,8,4,0">
+
+                        <TextBlock Text="OUTILS" Foreground="#546E7A" FontSize="8" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" Margin="0,0,0,4"/>
 
                         <Button Name="BtnToolPointer" Style="{StaticResource ToolButtonStyle}"
                                 ToolTip="Sélectionner / Déplacer (V)" Click="BtnToolPointer_Click">
-                            <TextBlock Text="↖" FontSize="18" FontWeight="Bold"/>
+                            <Viewbox Width="18" Height="18">
+                                <Path Data="M5,2 L5,19 L9,15 L12,22 L14,21 L11,14 L17,14 Z"
+                                      Fill="White" Stretch="Uniform"/>
+                            </Viewbox>
                         </Button>
 
                         <Button Name="BtnToolLine" Style="{StaticResource ToolButtonStyle}"
@@ -134,41 +150,69 @@
 
                         <Separator Style="{StaticResource ToolSeparatorStyle}"/>
 
+                        <TextBlock Text="ÉDITION" Foreground="#546E7A" FontSize="8" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" Margin="0,4,0,4"/>
+
                         <Button Name="BtnUndo" Style="{StaticResource ToolButtonStyle}"
                                 ToolTip="Annuler (Ctrl+Z)" Click="BtnUndo_Click" IsEnabled="{Binding CanUndo}">
-                            <TextBlock Text="↩" FontSize="17"/>
+                            <Viewbox Width="18" Height="18">
+                                <Path Data="M12.5,8C9.85,8 7.45,9 5.6,10.6L2,7V16H11L7.38,12.38C8.69,11.22 10.5,10.5 12.5,10.5C16.04,10.5 19.05,12.81 20.1,16L22.47,15.22C21.08,11.03 17.15,8 12.5,8Z"
+                                      Fill="White" Stretch="Uniform"/>
+                            </Viewbox>
                         </Button>
 
                         <Button Name="BtnRedo" Style="{StaticResource ToolButtonStyle}"
                                 ToolTip="Rétablir (Ctrl+Y)" Click="BtnRedo_Click" IsEnabled="{Binding CanRedo}">
-                            <TextBlock Text="↪" FontSize="17"/>
+                            <Viewbox Width="18" Height="18">
+                                <Path Data="M18.4,10.6C16.55,9 14.15,8 11.5,8C6.85,8 2.92,11.03 1.54,15.22L3.9,16C4.95,12.81 7.95,10.5 11.5,10.5C13.45,10.5 15.23,11.21 16.62,12.38L13,16H22V7L18.4,10.6Z"
+                                      Fill="White" Stretch="Uniform"/>
+                            </Viewbox>
                         </Button>
 
                         <Button Name="BtnDelete" Style="{StaticResource ToolButtonStyle}"
                                 ToolTip="Supprimer la sélection (Suppr)" Click="BtnDelete_Click"
                                 IsEnabled="{Binding HasSelection}">
-                            <TextBlock Text="🗑" FontSize="16"/>
+                            <Viewbox Width="17" Height="17">
+                                <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"
+                                      Fill="White" Stretch="Uniform"/>
+                            </Viewbox>
                         </Button>
 
                         <Separator Style="{StaticResource ToolSeparatorStyle}"/>
 
+                        <TextBlock Text="ORDRE" Foreground="#546E7A" FontSize="8" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" Margin="0,4,0,4"/>
+
                         <Button Name="BtnBringFront" Style="{StaticResource ToolButtonStyle}"
                                 ToolTip="Premier plan (Ctrl+])" Click="BtnBringFront_Click"
                                 IsEnabled="{Binding HasSelection}">
-                            <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="▲" FontSize="11" HorizontalAlignment="Center"/>
-                                <TextBlock Text="Avant" FontSize="8" HorizontalAlignment="Center" Foreground="#BDC3C7"/>
-                            </StackPanel>
+                            <Viewbox Width="20" Height="20">
+                                <Canvas Width="24" Height="24">
+                                    <!-- carré arrière : outline grisé -->
+                                    <Rectangle Canvas.Left="1" Canvas.Top="7" Width="13" Height="13"
+                                               Stroke="#7F8C8D" StrokeThickness="1.5" Fill="#34495E"/>
+                                    <!-- carré avant : blanc plein -->
+                                    <Rectangle Canvas.Left="8" Canvas.Top="2" Width="14" Height="14"
+                                               Stroke="White" StrokeThickness="1.5" Fill="White"/>
+                                </Canvas>
+                            </Viewbox>
                         </Button>
 
                         <Button Name="BtnSendBack" Style="{StaticResource ToolButtonStyle}"
                                 ToolTip="Arrière-plan (Ctrl+[)" Click="BtnSendBack_Click"
                                 IsEnabled="{Binding HasSelection}">
-                            <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="▼" FontSize="11" HorizontalAlignment="Center"/>
-                                <TextBlock Text="Arrière" FontSize="8" HorizontalAlignment="Center" Foreground="#BDC3C7"/>
-                            </StackPanel>
+                            <Viewbox Width="20" Height="20">
+                                <Canvas Width="24" Height="24">
+                                    <!-- carré arrière : blanc plein -->
+                                    <Rectangle Canvas.Left="1" Canvas.Top="7" Width="13" Height="13"
+                                               Stroke="White" StrokeThickness="1.5" Fill="White"/>
+                                    <!-- carré avant : transparent (on voit le carré derrière) -->
+                                    <Rectangle Canvas.Left="8" Canvas.Top="2" Width="14" Height="14"
+                                               Stroke="#7F8C8D" StrokeThickness="1.5" Fill="#34495E"/>
+                                </Canvas>
+                            </Viewbox>
                         </Button>
+
 
                     </StackPanel>
                 </DockPanel>
@@ -199,24 +243,20 @@
             </ScrollViewer>
         </Grid>
 
+        <!-- Color Picker Popup -->
+        <Popup x:Name="ColorPickerPopupCtrl" Grid.RowSpan="3"
+               AllowsTransparency="True" StaysOpen="False"
+               Placement="Bottom" VerticalOffset="4">
+            <views:ColorPickerPopup x:Name="ColorPicker"/>
+        </Popup>
+
         <!-- ══════════════════════════════════════════════════════════════
              BARRE DE STATUT (bas)
              ══════════════════════════════════════════════════════════════ -->
         <Border Grid.Row="2" Background="#2C3E50" BorderBrush="#1A252F" BorderThickness="0,1,0,0">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0"
-                           Text="{Binding StatusMessage}"
-                           Foreground="#BDC3C7" VerticalAlignment="Center"
-                           Margin="8,0" FontSize="11"/>
-                <TextBlock Grid.Column="1"
-                           Text="DrawMe v1.0 — Ctrl+Z/Y: Undo/Redo | Suppr: Supprimer | Ctrl+Molette: Zoom"
-                           Foreground="#7F8C8D" VerticalAlignment="Center"
-                           Margin="0,0,8,0" FontSize="10"/>
-            </Grid>
+            <TextBlock Text="DrawMe v1.0 — Ctrl+Z/Y: Undo/Redo | Suppr: Supprimer | Ctrl+Molette: Zoom"
+                       Foreground="#7F8C8D" VerticalAlignment="Center"
+                       HorizontalAlignment="Right" Margin="0,0,8,0" FontSize="10"/>
         </Border>
     </Grid>
 </Window>

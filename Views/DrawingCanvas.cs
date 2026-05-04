@@ -55,9 +55,6 @@ namespace DrawMe.Views
         private DrawingShapeBase? _resizingShape;
         private int _resizeHandleIndex;     // Quel handle (0-7)
         private ShapeSnapshot? _resizeSnapshot; // État avant resize
-        private int _resizeLineEndpoint = -1;   // Pour DrawingLine : 0=P1, 1=P2
-        private double _resizeLineSignX = 0;    // sign(X2-X1) au début du drag
-        private double _resizeLineSignY = 0;    // sign(Y2-Y1) au début du drag
 
         // ─── Sélection ─────────────────────────────────────────────────────
         private System.Windows.Shapes.Rectangle? _selectionRect; // Bordure de sélection
@@ -216,10 +213,11 @@ namespace DrawMe.Views
                     break;
 
                 case (DrawingTriangle m, System.Windows.Shapes.Polygon p):
-                    p.Points          = new PointCollection(m.GetPoints());
+                    p.Points          = new PointCollection(m.GetRenderPoints(m.StrokeThickness));
                     p.Fill            = fill;
                     p.Stroke          = stroke;
                     p.StrokeThickness = m.StrokeThickness;
+                    p.StrokeLineJoin  = PenLineJoin.Round;
                     break;
             }
         }
@@ -496,6 +494,7 @@ namespace DrawMe.Views
                     {
                         Fill = fill, Stroke = stroke,
                         StrokeThickness = _vm.StrokeThickness,
+                        StrokeLineJoin  = PenLineJoin.Round,
                         StrokeDashArray = new DoubleCollection { 4, 2 }
                     },
                 _ => null
@@ -524,8 +523,8 @@ namespace DrawMe.Views
                     ell.Height = Math.Max(1, r.Height);
                     break;
                 case System.Windows.Shapes.Polygon poly:
-                    var tmp = new DrawingTriangle { X = r.X, Y = r.Y, Width = Math.Max(1, r.Width), Height = Math.Max(1, r.Height) };
-                    poly.Points = new PointCollection(tmp.GetPoints());
+                    var tmp = new DrawingTriangle { X = r.X, Y = r.Y, Width = Math.Max(1, r.Width), Height = Math.Max(1, r.Height), StrokeThickness = poly.StrokeThickness };
+                    poly.Points = new PointCollection(tmp.GetRenderPoints(poly.StrokeThickness));
                     break;
             }
         }
@@ -606,19 +605,6 @@ namespace DrawMe.Views
             _resizeSnapshot   = _resizingShape != null ? ShapeSnapshot.From(_resizingShape) : null;
             _mouseMode        = MouseMode.Resizing;
 
-            if (_resizingShape is DrawingLine line)
-            {
-                var hp = GetHandlePositions(line.BoundingRect)[index];
-                double d1 = (line.X1 - hp.X) * (line.X1 - hp.X) + (line.Y1 - hp.Y) * (line.Y1 - hp.Y);
-                double d2 = (line.X2 - hp.X) * (line.X2 - hp.X) + (line.Y2 - hp.Y) * (line.Y2 - hp.Y);
-                _resizeLineEndpoint = d1 <= d2 ? 0 : 1;
-                _resizeLineSignX    = Math.Sign(line.X2 - line.X1);
-                _resizeLineSignY    = Math.Sign(line.Y2 - line.Y1);
-            }
-            else
-            {
-                _resizeLineEndpoint = -1;
-            }
         }
 
         private void OnHandleDragDelta(int index, DragDeltaEventArgs e)
@@ -656,26 +642,41 @@ namespace DrawMe.Views
             {
                 case DrawingLine line:
                 {
-                    if (_resizeLineEndpoint == 0)
+                    // Each handle controls specific bounding-box edges.
+                    // For a line the "left edge" is the endpoint with smaller X, etc.
+                    // Corner handles may control a different endpoint per axis, which
+                    // is the root cause of the bug when endpoints are on opposite corners.
+                    bool affectsLeft   = handleIndex == 0 || handleIndex == 3 || handleIndex == 5;
+                    bool affectsRight  = handleIndex == 2 || handleIndex == 4 || handleIndex == 7;
+                    bool affectsTop    = handleIndex == 0 || handleIndex == 1 || handleIndex == 2;
+                    bool affectsBottom = handleIndex == 5 || handleIndex == 6 || handleIndex == 7;
+
+                    double newX1 = line.X1, newY1 = line.Y1;
+                    double newX2 = line.X2, newY2 = line.Y2;
+
+                    if (affectsLeft)
                     {
-                        double newX1 = line.X1 + dx;
-                        double newY1 = line.Y1 + dy;
-                        if (_resizeLineSignX > 0) newX1 = Math.Min(newX1, line.X2 - MinShapeSize);
-                        else if (_resizeLineSignX < 0) newX1 = Math.Max(newX1, line.X2 + MinShapeSize);
-                        if (_resizeLineSignY > 0) newY1 = Math.Min(newY1, line.Y2 - MinShapeSize);
-                        else if (_resizeLineSignY < 0) newY1 = Math.Max(newY1, line.Y2 + MinShapeSize);
-                        line.X1 = newX1; line.Y1 = newY1;
+                        if (line.X1 <= line.X2) newX1 = Math.Min(line.X1 + dx, line.X2 - MinShapeSize);
+                        else                     newX2 = Math.Min(line.X2 + dx, line.X1 - MinShapeSize);
                     }
-                    else
+                    if (affectsRight)
                     {
-                        double newX2 = line.X2 + dx;
-                        double newY2 = line.Y2 + dy;
-                        if (_resizeLineSignX > 0) newX2 = Math.Max(newX2, line.X1 + MinShapeSize);
-                        else if (_resizeLineSignX < 0) newX2 = Math.Min(newX2, line.X1 - MinShapeSize);
-                        if (_resizeLineSignY > 0) newY2 = Math.Max(newY2, line.Y1 + MinShapeSize);
-                        else if (_resizeLineSignY < 0) newY2 = Math.Min(newY2, line.Y1 - MinShapeSize);
-                        line.X2 = newX2; line.Y2 = newY2;
+                        if (line.X1 >= line.X2) newX1 = Math.Max(line.X1 + dx, line.X2 + MinShapeSize);
+                        else                     newX2 = Math.Max(line.X2 + dx, line.X1 + MinShapeSize);
                     }
+                    if (affectsTop)
+                    {
+                        if (line.Y1 <= line.Y2) newY1 = Math.Min(line.Y1 + dy, line.Y2 - MinShapeSize);
+                        else                     newY2 = Math.Min(line.Y2 + dy, line.Y1 - MinShapeSize);
+                    }
+                    if (affectsBottom)
+                    {
+                        if (line.Y1 >= line.Y2) newY1 = Math.Max(line.Y1 + dy, line.Y2 + MinShapeSize);
+                        else                     newY2 = Math.Max(line.Y2 + dy, line.Y1 + MinShapeSize);
+                    }
+
+                    line.X1 = newX1; line.Y1 = newY1;
+                    line.X2 = newX2; line.Y2 = newY2;
                     break;
                 }
 

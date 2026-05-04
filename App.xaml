@@ -56,16 +56,42 @@
 
         <!-- Style bouton actif (outil sélectionné) -->
         <Style x:Key="ActiveToolButtonStyle" TargetType="Button" BasedOn="{StaticResource ToolButtonStyle}">
-            <Setter Property="Background" Value="#3498DB"/>
-            <Setter Property="BorderBrush" Value="#E74C3C"/>
-            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Background" Value="#2980B9"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <!-- Barre d'accent blanche à gauche -->
+                            <Rectangle Width="3" HorizontalAlignment="Left"
+                                       Fill="White" RadiusX="0" RadiusY="0"/>
+                            <Border x:Name="Bd"
+                                    Background="{TemplateBinding Background}"
+                                    CornerRadius="6"
+                                    Margin="3,0,0,0">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#3498DB"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#1A6FA8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <!-- Style des boutons de propriétés -->
         <Style x:Key="PropButtonStyle" TargetType="Button">
-            <Setter Property="Height" Value="28"/>
-            <Setter Property="Padding" Value="10,2"/>
-            <Setter Property="Margin" Value="3,0"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="2,0"/>
             <Setter Property="Background" Value="#455A64"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderBrush" Value="Transparent"/>

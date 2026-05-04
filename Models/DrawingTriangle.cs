@@ -20,13 +20,25 @@ namespace DrawMe.Models
 
         public override Rect BoundingRect => new Rect(X, Y, Width, Height);
 
-        // Sommet haut-centre, bas-gauche, bas-droite
+        // Sommet haut-centre, bas-gauche, bas-droite (pour HitTest)
         public Point[] GetPoints() => new[]
         {
             new Point(X + Width / 2, Y),
             new Point(X,             Y + Height),
             new Point(X + Width,     Y + Height)
         };
+
+        // Points insérés par h = stroke/2 pour que le rendu reste dans les bounds
+        public Point[] GetRenderPoints(double strokeThickness)
+        {
+            double h = strokeThickness / 2.0;
+            return new[]
+            {
+                new Point(X + Width / 2,  Y + h),
+                new Point(X + h,          Y + Height - h),
+                new Point(X + Width - h,  Y + Height - h)
+            };
+        }
 
         public override bool HitTest(Point p)
         {
