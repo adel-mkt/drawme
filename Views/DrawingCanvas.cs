@@ -605,6 +605,30 @@ namespace DrawMe.Views
             _resizeSnapshot   = _resizingShape != null ? ShapeSnapshot.From(_resizingShape) : null;
             _mouseMode        = MouseMode.Resizing;
 
+<<<<<<< HEAD
+=======
+            if (_resizingShape is DrawingLine line)
+            {
+                var hp = GetHandlePositions(line.BoundingRect)[index];
+                double d1 = (line.X1 - hp.X) * (line.X1 - hp.X) + (line.Y1 - hp.Y) * (line.Y1 - hp.Y);
+                double d2 = (line.X2 - hp.X) * (line.X2 - hp.X) + (line.Y2 - hp.Y) * (line.Y2 - hp.Y);
+                _resizeLineEndpoint = d1 <= d2 ? 0 : 1;
+
+                // Vecteur dirigé du point fixe vers le point mobile
+                Point fixP = _resizeLineEndpoint == 0 ? new Point(line.X2, line.Y2) : new Point(line.X1, line.Y1);
+                Point movP = _resizeLineEndpoint == 0 ? new Point(line.X1, line.Y1) : new Point(line.X2, line.Y2);
+                
+                _resizeLineDir = new Vector(movP.X - fixP.X, movP.Y - fixP.Y);
+                if (_resizeLineDir.Length > 1e-6)
+                    _resizeLineDir.Normalize();
+                else
+                    _resizeLineDir = new Vector(1, 0); // fallback si longueur nulle
+            }
+            else
+            {
+                _resizeLineEndpoint = -1;
+            }
+>>>>>>> 392e34955b074733aa0053f3388b85026151fc83
         }
 
         private void OnHandleDragDelta(int index, DragDeltaEventArgs e)
@@ -642,6 +666,7 @@ namespace DrawMe.Views
             {
                 case DrawingLine line:
                 {
+<<<<<<< HEAD
                     // Each handle controls specific bounding-box edges.
                     // For a line the "left edge" is the endpoint with smaller X, etc.
                     // Corner handles may control a different endpoint per axis, which
@@ -658,11 +683,27 @@ namespace DrawMe.Views
                     {
                         if (line.X1 <= line.X2) newX1 = Math.Min(line.X1 + dx, line.X2 - MinShapeSize);
                         else                     newX2 = Math.Min(line.X2 + dx, line.X1 - MinShapeSize);
+=======
+                    // Projection du vecteur souris sur la direction de la ligne.
+                    // Garantit : aucun effet d'inversion, comportement stable, pas d'accumulation d'erreur.
+                    Vector mouseDelta = new Vector(dx, dy);
+                    double movementAlongAxis = Vector.Multiply(mouseDelta, _resizeLineDir);
+
+                    if (_resizeLineEndpoint == 0)
+                    {
+                        line.X1 += _resizeLineDir.X * movementAlongAxis;
+                        line.Y1 += _resizeLineDir.Y * movementAlongAxis;
+>>>>>>> 392e34955b074733aa0053f3388b85026151fc83
                     }
                     if (affectsRight)
                     {
+<<<<<<< HEAD
                         if (line.X1 >= line.X2) newX1 = Math.Max(line.X1 + dx, line.X2 + MinShapeSize);
                         else                     newX2 = Math.Max(line.X2 + dx, line.X1 + MinShapeSize);
+=======
+                        line.X2 += _resizeLineDir.X * movementAlongAxis;
+                        line.Y2 += _resizeLineDir.Y * movementAlongAxis;
+>>>>>>> 392e34955b074733aa0053f3388b85026151fc83
                     }
                     if (affectsTop)
                     {
